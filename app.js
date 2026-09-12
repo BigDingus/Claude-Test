@@ -202,6 +202,62 @@ document.getElementById("transactionForm").addEventListener("submit", (e) => {
   render();
 });
 
+function csvEscape(value) {
+  const str = String(value ?? "");
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+function toCsvRow(cells) {
+  return cells.map(csvEscape).join(",") + "\r\n";
+}
+
+function buildCsv() {
+  const t = totals();
+  let csv = "";
+
+  csv += toCsvRow(["Summary"]);
+  csv += toCsvRow(["Monthly Income", t.income.toFixed(2)]);
+  csv += toCsvRow(["Total Budgeted", t.budgeted.toFixed(2)]);
+  csv += toCsvRow(["Total Spent", t.spent.toFixed(2)]);
+  csv += toCsvRow(["Remaining", t.remaining.toFixed(2)]);
+  csv += "\r\n";
+
+  csv += toCsvRow(["Categories"]);
+  csv += toCsvRow(["Category", "Budgeted", "Spent", "Remaining", "% Used"]);
+  state.categories.forEach((c) => {
+    const spent = categorySpent(c.id);
+    const pct = c.amount > 0 ? ((spent / c.amount) * 100).toFixed(1) : "0.0";
+    csv += toCsvRow([c.name, c.amount.toFixed(2), spent.toFixed(2), (c.amount - spent).toFixed(2), `${pct}%`]);
+  });
+  csv += "\r\n";
+
+  const byId = Object.fromEntries(state.categories.map((c) => [c.id, c.name]));
+  csv += toCsvRow(["Transactions"]);
+  csv += toCsvRow(["Date", "Category", "Description", "Amount"]);
+  [...state.transactions]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .forEach((tx) => {
+      const date = new Date(tx.date).toISOString().slice(0, 10);
+      csv += toCsvRow([date, byId[tx.categoryId] || "Uncategorized", tx.description, tx.amount.toFixed(2)]);
+    });
+
+  return csv;
+}
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const csv = "﻿" + buildCsv(); // BOM so Excel detects UTF-8
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `household-budget-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (!confirm("Clear all budget data on this device? This cannot be undone.")) return;
   state = { income: 0, categories: [], transactions: [] };
