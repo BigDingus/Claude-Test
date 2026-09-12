@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Household Budget</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Household Budget</h1>
+      <p class="subtitle">Track income, set category budgets, and log spending — all saved on this device.</p>
+    </header>
+
+    <section class="summary-cards" id="summaryCards"></section>
+
+    <section class="panel">
+      <h2>Monthly Income</h2>
+      <form id="incomeForm" class="inline-form">
+        <input type="number" id="incomeInput" min="0" step="0.01" placeholder="e.g. 3500" required />
+        <button type="submit">Set Income</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Budget Categories</h2>
+      <form id="categoryForm" class="inline-form">
+        <input type="text" id="categoryName" placeholder="Category (e.g. Groceries)" required />
+        <input type="number" id="categoryAmount" min="0" step="0.01" placeholder="Budgeted amount" required />
+        <button type="submit">Add Category</button>
+      </form>
+      <ul id="categoryList" class="category-list"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Log a Transaction</h2>
+      <form id="transactionForm" class="inline-form">
+        <select id="transactionCategory" required></select>
+        <input type="text" id="transactionDesc" placeholder="Description" required />
+        <input type="number" id="transactionAmount" min="0" step="0.01" placeholder="Amount" required />
+        <button type="submit">Add Expense</button>
+      </form>
+      <ul id="transactionList" class="transaction-list"></ul>
+    </section>
+
+    <footer>
+      <button id="resetBtn" class="danger">Reset All Data</button>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
